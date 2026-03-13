@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TrainSmart">
+<title>TrainSmart — Your Personal Fitness App</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0d0b;
+  --surface: #1a1612;
+  --surface2: #221e19;
+  --surface3: #2a2420;
+  --border: rgba(255,255,255,0.07);
+  --terra: #d4714a;
+  --terra2: #e8956e;
+  --gold: #c9973a;
+  --gold2: #e4b85c;
+  --sage: #7a9e7e;
+  --sage2: #9ec0a2;
+  --cream: #f0e8df;
+  --muted: #7a6e65;
+  --text: #f0e8df;
+  --text2: #b8a898;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:var(--bg);}
+body{font-family:'Outfit',sans-serif;color:var(--text);font-weight:300;}
+
+/* ── SPLASH ── */
+#splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;transition:opacity .6s;}
+#splash.hide{opacity:0;pointer-events:none;}
+.splash-logo{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:700;color:var(--cream);letter-spacing:-1px;margin-bottom:8px;}
+.splash-logo em{font-style:italic;color:var(--terra2);}
+.splash-sub{font-size:13px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:48px;}
+.splash-bar{width:180px;height:2px;background:var(--surface3);border-radius:2px;overflow:hidden;}
+.splash-fill{height:100%;background:linear-gradient(90deg,var(--terra),var(--gold));border-radius:2px;animation:fill 1.8s ease forwards;}
+@keyframes fill{from{width:0}to{width:100%}}
+
+/* ── LAYOUT ── */
+#app{height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:80px;display:none;}
+.screen.active{display:block;}
+.screen::-webkit-scrollbar{display:none;}
+
+/* ── NAV ── */
+nav{height:68px;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;flex-shrink:0;position:relative;z-index:10;}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 16px;cursor:pointer;opacity:.45;transition:opacity .2s;}
+.nav-btn.active{opacity:1;}
+.nav-icon{font-size:20px;}
+.nav-label{font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);}
+.nav-btn.active .nav-label{color:var(--terra2);}
+
+/* ── SHARED ── */
+.section-head{padding:28px 20px 16px;display:flex;align-items:flex-end;justify-content:space-between;}
+.section-head h2{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;line-height:1;}
+.section-head h2 em{font-style:italic;color:var(--terra2);}
+.section-tag{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin:0 16px 14px;}
+.card-inner{padding:18px;}
+
+/* ── HOME SCREEN ── */
+.home-hero{background:linear-gradient(160deg,var(--surface2) 0%,var(--bg) 100%);padding:32px 20px 24px;position:relative;overflow:hidden;}
+.home-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(212,113,74,.18) 0%,transparent 70%);}
+.greeting-tag{font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--terra);margin-bottom:8px;}
+.greeting-name{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;line-height:1.1;margin-bottom:6px;}
+.greeting-name em{font-style:italic;color:var(--terra2);}
+.greeting-compliment{font-size:13px;color:var(--text2);max-width:280px;line-height:1.5;margin-bottom:20px;}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.hero-stat{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;padding:14px 10px;text-align:center;}
+.hero-stat-val{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--cream);line-height:1;}
+.hero-stat-label{font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:.5px;}
+
+.today-card{margin:0 16px 14px;background:linear-gradient(135deg,var(--terra),#a84d2a);border-radius:18px;padding:20px;cursor:pointer;transition:transform .15s;}
+.today-card:active{transform:scale(.98);}
+.today-tag{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:6px;}
+.today-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:white;margin-bottom:4px;}
+.today-sub{font-size:13px;color:rgba(255,255,255,.7);margin-bottom:16px;}
+.today-btn{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:white;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:600;display:inline-block;}
+
+.reminder-card{margin:0 16px 14px;background:var(--surface);border:1px solid var(--border);border-radius:18px;}
+.reminder-list{list-style:none;}
+.reminder-item{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);}
+.reminder-item:last-child{border-bottom:none;}
+.reminder-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot-terra{background:var(--terra);}
+.dot-gold{background:var(--gold);}
+.dot-sage{background:var(--sage);}
+.reminder-text{font-size:13px;color:var(--text2);flex:1;}
+.reminder-time{font-size:11px;color:var(--muted);}
+
+.progress-rings{margin:0 16px 14px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;}
+.rings-title{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+.rings-row{display:flex;justify-content:space-around;}
+.ring-item{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.ring-label{font-size:10px;color:var(--muted);letter-spacing:.5px;}
+.ring-svg{transform:rotate(-90deg);}
+.ring-track{fill:none;stroke:var(--surface3);stroke-width:4;}
+.ring-fill{fill:none;stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .8s ease;}
+
+/* ── WORKOUT SCREEN ── */
+.day-tabs{display:flex;gap:8px;padding:0 16px 16px;overflow-x:auto;}
+.day-tabs::-webkit-scrollbar{display:none;}
+.day-tab{flex-shrink:0;padding:8px 16px;border-radius:100px;font-size:12px;font-weight:600;letter-spacing:.5px;cursor:pointer;transition:all .2s;border:1px solid var(--border);color:var(--muted);background:var(--surface);}
+.day-tab.active{background:var(--terra);border-color:var(--terra);color:white;}
+.day-tab.leg{border-color:rgba(212,113,74,.4);color:var(--terra2);}
+.day-tab.leg.active{background:var(--terra);color:white;}
+
+.workout-day-header{margin:0 16px 14px;border-radius:18px;padding:20px;background:var(--surface2);border:1px solid var(--border);}
+.wdh-day{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--terra);margin-bottom:4px;}
+.wdh-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;margin-bottom:6px;}
+.wdh-goal{font-size:13px;color:var(--text2);}
+.wdh-badge{display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:rgba(255,255,255,.06);padding:6px 12px;border-radius:100px;font-size:11px;font-weight:600;color:var(--text2);}
+
+.stretch-block{margin:0 16px 14px;}
+.stretch-header-pill{display:inline-flex;align-items:center;gap:8px;margin-bottom:12px;}
+.stretch-pill-badge{padding:4px 12px;border-radius:100px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+.pre-badge{background:var(--sage);color:white;}
+.post-badge{background:var(--gold);color:white;}
+.stretch-pill-desc{font-size:12px;color:var(--muted);}
+.stretch-items{display:flex;flex-direction:column;gap:8px;}
+.s-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;}
+.s-icon{font-size:18px;width:28px;text-align:center;}
+.s-name{font-size:13px;font-weight:500;flex:1;}
+.s-dur{font-size:11px;color:var(--terra2);font-weight:600;}
+
+.ex-block{margin:0 16px 14px;}
+.ex-block-label{display:inline-flex;align-items:center;gap:8px;background:var(--surface3);padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;margin-bottom:12px;}
+.ex-block-label span{color:var(--terra2);}
+.exercise-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:8px;overflow:hidden;}
+.ex-row{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;}
+.ex-num{width:30px;height:30px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);flex-shrink:0;}
+.ex-num.done{background:var(--sage);color:white;}
+.ex-info{flex:1;}
+.ex-name{font-size:14px;font-weight:500;}
+.ex-detail{font-size:12px;color:var(--terra2);margin-top:2px;}
+.ex-toggle{font-size:18px;color:var(--muted);transition:transform .3s;}
+.ex-toggle.open{transform:rotate(180deg);}
+.ex-expand{max-height:0;overflow:hidden;transition:max-height .4s ease;}
+.ex-expand.open{max-height:400px;}
+.ex-expand-inner{padding:0 16px 16px;border-top:1px solid var(--border);}
+.form-tip-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin:12px 0 8px;}
+.form-cues{list-style:none;display:flex;flex-direction:column;gap:6px;}
+.form-cue{font-size:12.5px;color:var(--text2);display:flex;align-items:flex-start;gap:8px;line-height:1.4;}
+.form-cue::before{content:'→';color:var(--terra);flex-shrink:0;}
+.sets-tracker{margin-top:12px;}
+.sets-row{display:flex;gap:8px;flex-wrap:wrap;}
+.set-btn{width:38px;height:38px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;}
+.set-btn.done{background:var(--terra);border-color:var(--terra);color:white;}
+
+.finisher-pill{margin:0 16px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;}
+.fp-icon{font-size:24px;}
+.fp-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--terra);margin-bottom:3px;}
+.fp-text{font-size:13px;font-weight:500;}
+
+/* ── NUTRITION SCREEN ── */
+.macro-overview{margin:0 16px 14px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;}
+.macro-title{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+.macro-bars{display:flex;flex-direction:column;gap:12px;}
+.macro-bar-row{display:flex;align-items:center;gap:12px;}
+.macro-bar-label{font-size:12px;font-weight:600;width:70px;color:var(--text2);}
+.macro-bar-track{flex:1;height:8px;background:var(--surface3);border-radius:100px;overflow:hidden;}
+.macro-bar-fill{height:100%;border-radius:100px;transition:width .5s ease;}
+.bar-protein{background:linear-gradient(90deg,var(--terra),var(--terra2));}
+.bar-carbs{background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.bar-fat{background:linear-gradient(90deg,var(--sage),var(--sage2));}
+.macro-bar-val{font-size:11px;color:var(--muted);width:50px;text-align:right;}
+
+.meal-add-btn{margin:0 16px 14px;background:var(--terra);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;border:none;width:calc(100% - 32px);color:white;font-family:'Outfit',sans-serif;}
+.mab-icon{font-size:20px;}
+.mab-text{font-size:14px;font-weight:600;}
+
+.meal-log{margin:0 16px 14px;}
+.meal-section-title{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.meal-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.mi-left{display:flex;align-items:center;gap:10px;}
+.mi-emoji{font-size:22px;}
+.mi-name{font-size:14px;font-weight:500;}
+.mi-time{font-size:11px;color:var(--muted);margin-top:2px;}
+.mi-cals{font-size:13px;font-weight:600;color:var(--terra2);}
+.mi-delete{font-size:16px;color:var(--muted);cursor:pointer;padding:4px;}
+
+.add-meal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:flex-end;}
+.add-meal-overlay.show{display:flex;}
+.add-meal-sheet{background:var(--surface);border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;}
+.ams-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:20px;}
+.ams-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:13px 16px;color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;margin-bottom:10px;outline:none;}
+.ams-input:focus{border-color:var(--terra);}
+.ams-row{display:flex;gap:10px;}
+.ams-btn{flex:1;padding:14px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:'Outfit',sans-serif;}
+.ams-cancel{background:var(--surface3);color:var(--text2);}
+.ams-save{background:var(--terra);color:white;}
+.quick-foods{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.qf-chip{background:var(--surface3);border:1px solid var(--border);border-radius:100px;padding:6px 14px;font-size:12px;cursor:pointer;color:var(--text2);}
+
+/* ── PROGRESS SCREEN ── */
+.weight-card{margin:0 16px 14px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;}
+.wc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
+.wc-current{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:700;line-height:1;}
+.wc-unit{font-size:18px;color:var(--muted);}
+.wc-change{font-size:13px;color:var(--sage);font-weight:600;}
+.weight-chart{height:80px;position:relative;}
+.chart-svg{width:100%;height:100%;}
+.weight-log-btn{margin-top:14px;background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:10px 16px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;width:100%;font-family:'Outfit',sans-serif;}
+
+.milestone-grid{margin:0 16px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.milestone-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;}
+.mc-icon{font-size:28px;margin-bottom:8px;}
+.mc-label{font-size:11px;color:var(--muted);letter-spacing:.5px;margin-bottom:4px;}
+.mc-val{font-size:18px;font-weight:600;color:var(--cream);}
+.mc-val.achieved{color:var(--sage);}
+
+.photo-section{margin:0 16px 14px;}
+.photo-title{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.photo-slot{aspect-ratio:1;background:var(--surface);border:1px dashed var(--border);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:4px;}
+.photo-slot-icon{font-size:22px;color:var(--muted);}
+.photo-slot-label{font-size:10px;color:var(--muted);}
+
+.timeline-section{margin:0 16px 14px;}
+.timeline-item{display:flex;gap:14px;margin-bottom:16px;}
+.tl-dot-col{display:flex;flex-direction:column;align-items:center;}
+.tl-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.tl-line{width:1px;flex:1;background:var(--surface3);margin-top:4px;}
+.tl-content{flex:1;padding-bottom:8px;}
+.tl-month{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+.tl-goal{font-size:13px;color:var(--text2);}
+
+/* ── SETTINGS / PROFILE ── */
+.profile-hero{padding:32px 20px 24px;text-align:center;}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--terra),var(--gold));display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 12px;}
+.profile-name-display{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;}
+.profile-stats-row{display:flex;gap:10px;margin:0 16px 14px;}
+.profile-stat-card{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;}
+.psc-val{font-size:22px;font-weight:700;color:var(--cream);}
+.psc-label{font-size:10px;color:var(--muted);margin-top:3px;}
+
+.settings-list{margin:0 16px 14px;}
+.settings-group-title{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.settings-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:15px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.si-left{display:flex;align-items:center;gap:12px;}
+.si-icon{font-size:18px;width:28px;}
+.si-text{font-size:14px;font-weight:500;}
+.si-val{font-size:13px;color:var(--terra2);}
+.toggle{width:44px;height:26px;background:var(--surface3);border-radius:100px;position:relative;cursor:pointer;transition:background .2s;}
+.toggle.on{background:var(--terra);}
+.toggle-knob{width:20px;height:20px;border-radius:50%;background:white;position:absolute;top:3px;left:3px;transition:transform .2s;}
+.toggle.on .toggle-knob{transform:translateX(18px);}
+
+.name-edit-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
+.name-edit-overlay.show{display:flex;}
+.name-edit-sheet{background:var(--surface);border-radius:20px;padding:24px;width:100%;max-width:360px;}
+.nes-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;margin-bottom:16px;}
+
+/* ── COMPLIMENT TOAST ── */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:linear-gradient(135deg,var(--terra),var(--gold));color:white;padding:12px 20px;border-radius:100px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:200;white-space:nowrap;max-width:90vw;text-align:center;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── WEIGHT LOG OVERLAY ── */
+.weight-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:flex-end;}
+.weight-overlay.show{display:flex;}
+.weight-sheet{background:var(--surface);border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-logo">Train<em>Smart</em></div>
+  <div class="splash-sub">Recover Better</div>
+  <div class="splash-bar"><div class="splash-fill"></div></div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- ══════════════ HOME ══════════════ -->
+  <div class="screen active" id="screen-home">
+    <div class="home-hero">
+      <div class="greeting-tag">Good <span id="time-of-day">morning</span> ✦</div>
+      <div class="greeting-name">Hey, <em id="display-name">Denise</em> 👋</div>
+      <div class="greeting-compliment" id="daily-compliment">You showed up yesterday — that's already more than most people do. Let's build on that.</div>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="hero-stat-val" id="streak-count">0</div><div class="hero-stat-label">Day Streak 🔥</div></div>
+        <div class="hero-stat"><div class="hero-stat-val" id="workouts-done">0</div><div class="hero-stat-label">Workouts Done</div></div>
+        <div class="hero-stat"><div class="hero-stat-val" id="weeks-in">1</div><div class="hero-stat-label">Weeks In</div></div>
+      </div>
+    </div>
+
+    <div style="height:16px;"></div>
+
+    <!-- Today's workout -->
+    <div class="today-card" onclick="goToTodayWorkout()">
+      <div class="today-tag">Today · <span id="today-day-name">Monday</span></div>
+      <div class="today-title" id="today-workout-title">Core + Belly Fat Burn</div>
+      <div class="today-sub" id="today-workout-sub">45–55 min · 6 exercises · Full stretching included</div>
+      <div class="today-btn">Start Workout →</div>
+    </div>
+
+    <!-- Daily reminders -->
+    <div class="card">
+      <div class="card-inner">
+        <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Today's Reminders</div>
+        <ul class="reminder-list">
+          <li class="reminder-item"><div class="reminder-dot dot-terra"></div><div class="reminder-text">💧 Drink your first glass of water</div><div class="reminder-time">Now</div></li>
+          <li class="reminder-item"><div class="reminder-dot dot-gold"></div><div class="reminder-text">🍋 Warm lemon water before breakfast</div><div class="reminder-time">Morning</div></li>
+          <li class="reminder-item"><div class="reminder-dot dot-terra"></div><div class="reminder-text" id="workout-reminder">🏋️ Today's workout is waiting for you</div><div class="reminder-time" id="workout-day-label">Mon</div></li>
+          <li class="reminder-item"><div class="reminder-dot dot-sage"></div><div class="reminder-text">🚶 Evening walk after dinner</div><div class="reminder-time">Evening</div></li>
+          <li class="reminder-item"><div class="reminder-dot dot-gold"></div><div class="reminder-text">😴 No screens 30 min before bed</div><div class="reminder-time">Night</div></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Activity rings -->
+    <div class="progress-rings">
+      <div class="rings-title">Today's Activity Rings</div>
+      <div class="rings-row">
+        <div class="ring-item">
+          <svg class="ring-svg" width="70" height="70" viewBox="0 0 70 70">
+            <circle class="ring-track" cx="35" cy="35" r="28"/>
+            <circle class="ring-fill" cx="35" cy="35" r="28" stroke="var(--terra)" stroke-dasharray="175.9" stroke-dashoffset="175.9" id="ring-workout"/>
+          </svg>
+          <div class="ring-label">Workout</div>
+        </div>
+        <div class="ring-item">
+          <svg class="ring-svg" width="70" height="70" viewBox="0 0 70 70">
+            <circle class="ring-track" cx="35" cy="35" r="28"/>
+            <circle class="ring-fill" cx="35" cy="35" r="28" stroke="var(--gold)" stroke-dasharray="175.9" stroke-dashoffset="175.9" id="ring-water"/>
+          </svg>
+          <div class="ring-label">Water</div>
+        </div>
+        <div class="ring-item">
+          <svg class="ring-svg" width="70" height="70" viewBox="0 0 70 70">
+            <circle class="ring-track" cx="35" cy="35" r="28"/>
+            <circle class="ring-fill" cx="35" cy="35" r="28" stroke="var(--sage)" stroke-dasharray="175.9" stroke-dashoffset="175.9" id="ring-steps"/>
+          </svg>
+          <div class="ring-label">Steps</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button onclick="logRing('workout')" style="flex:1;background:var(--surface3);border:none;color:var(--text2);padding:10px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;">✓ Workout</button>
+        <button onclick="logRing('water')" style="flex:1;background:var(--surface3);border:none;color:var(--text2);padding:10px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;">💧 Water</button>
+        <button onclick="logRing('steps')" style="flex:1;background:var(--surface3);border:none;color:var(--text2);padding:10px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;">🚶 Steps</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ WORKOUTS ══════════════ -->
+  <div class="screen" id="screen-workouts">
+    <div class="section-head"><h2>Your <em>Plan</em></h2><div class="section-tag">5 days · Tap for form tips</div></div>
+
+    <div class="day-tabs" id="day-tabs">
+      <div class="day-tab active" onclick="showDay(0)">Mon</div>
+      <div class="day-tab" onclick="showDay(1)">Tue</div>
+      <div class="day-tab leg" onclick="showDay(2)">Wed 🦵</div>
+      <div class="day-tab leg" onclick="showDay(3)">Thu 🦵</div>
+      <div class="day-tab" onclick="showDay(4)">Fri</div>
+    </div>
+
+    <div id="workout-content"></div>
+  </div>
+
+  <!-- ══════════════ NUTRITION ══════════════ -->
+  <div class="screen" id="screen-nutrition">
+    <div class="section-head"><h2>Eat <em>Well</em></h2><div class="section-tag" id="nutrition-date">Today</div></div>
+
+    <div class="macro-overview">
+      <div class="macro-title">Daily Macros — <span id="total-cals">0</span> kcal logged</div>
+      <div class="macro-bars">
+        <div class="macro-bar-row">
+          <div class="macro-bar-label">Protein</div>
+          <div class="macro-bar-track"><div class="macro-bar-fill bar-protein" id="bar-protein" style="width:0%"></div></div>
+          <div class="macro-bar-val" id="val-protein">0g</div>
+        </div>
+        <div class="macro-bar-row">
+          <div class="macro-bar-label">Carbs</div>
+          <div class="macro-bar-track"><div class="macro-bar-fill bar-carbs" id="bar-carbs" style="width:0%"></div></div>
+          <div class="macro-bar-val" id="val-carbs">0g</div>
+        </div>
+        <div class="macro-bar-row">
+          <div class="macro-bar-label">Fats</div>
+          <div class="macro-bar-track"><div class="macro-bar-fill bar-fat" id="bar-fat" style="width:0%"></div></div>
+          <div class="macro-bar-val" id="val-fat">0g</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="meal-add-btn" onclick="openAddMeal()">
+      <div class="mab-icon">＋</div>
+      <div class="mab-text">Log a meal or snack</div>
+    </button>
+
+    <div class="meal-log">
+      <div class="meal-section-title">Today's Food Log</div>
+      <div id="meal-log-list"><div style="text-align:center;color:var(--muted);font-size:13px;padding:20px;">No meals logged yet — add your first one! 🥗</div></div>
+    </div>
+
+    <!-- Nutrition tips -->
+    <div class="card" style="margin-top:8px;">
+      <div class="card-inner">
+        <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Daily Rules 📋</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:13px;color:var(--text2);display:flex;gap:8px;"><span style="color:var(--sage);">✓</span> Protein every meal (eggs, chicken, fish, Greek yogurt)</div>
+          <div style="font-size:13px;color:var(--text2);display:flex;gap:8px;"><span style="color:var(--sage);">✓</span> 40% veg · 30% protein · 30% smart carbs</div>
+          <div style="font-size:13px;color:var(--text2);display:flex;gap:8px;"><span style="color:var(--sage);">✓</span> 2.5–3L water daily · Lemon water in the morning</div>
+          <div style="font-size:13px;color:var(--text2);display:flex;gap:8px;"><span style="color:var(--terra);">✕</span> Limit soda, alcohol, ultra-processed snacks</div>
+          <div style="font-size:13px;color:var(--text2);display:flex;gap:8px;"><span style="color:var(--terra);">✕</span> Limit sodium — causes upper belly water retention</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ PROGRESS ══════════════ -->
+  <div class="screen" id="screen-progress">
+    <div class="section-head"><h2>Your <em>Journey</em></h2><div class="section-tag">Track everything</div></div>
+
+    <div class="weight-card">
+      <div class="wc-top">
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;letter-spacing:1px;text-transform:uppercase;">Current Weight</div>
+          <div class="wc-current"><span id="current-weight">—</span><span class="wc-unit"> kg</span></div>
+          <div class="wc-change" id="weight-change"></div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;letter-spacing:1px;text-transform:uppercase;">Goal</div>
+          <div style="font-size:22px;font-weight:700;" id="goal-weight">—</div>
+          <div style="font-size:11px;color:var(--muted);">kg target</div>
+        </div>
+      </div>
+      <div class="weight-chart">
+        <svg class="chart-svg" id="weight-chart-svg" viewBox="0 0 300 80" preserveAspectRatio="none">
+          <text id="chart-placeholder" x="150" y="45" text-anchor="middle" fill="#4a4040" font-size="12">Log your weight to see your chart</text>
+        </svg>
+      </div>
+      <button class="weight-log-btn" onclick="openWeightLog()">+ Log today's weight</button>
+    </div>
+
+    <div class="milestone-grid">
+      <div class="milestone-card"><div class="mc-icon">🔥</div><div class="mc-label">Best Streak</div><div class="mc-val" id="best-streak">0 days</div></div>
+      <div class="milestone-card"><div class="mc-icon">💪</div><div class="mc-label">Total Workouts</div><div class="mc-val" id="total-workouts-done">0</div></div>
+      <div class="milestone-card"><div class="mc-icon">🥗</div><div class="mc-label">Meals Logged</div><div class="mc-val" id="total-meals">0</div></div>
+      <div class="milestone-card"><div class="mc-icon">📅</div><div class="mc-label">Weeks Active</div><div class="mc-val" id="weeks-active">1</div></div>
+    </div>
+
+    <div class="photo-section" style="margin:0 16px 14px;">
+      <div class="photo-title">Progress Photos (Optional)</div>
+      <div class="photo-grid">
+        <div class="photo-slot" onclick="showToast('Progress photos: save to your camera roll for now 📸')"><div class="photo-slot-icon">📷</div><div class="photo-slot-label">Week 1</div></div>
+        <div class="photo-slot" onclick="showToast('Keep going — photo unlock at Week 4! 💪')"><div class="photo-slot-icon">🔒</div><div class="photo-slot-label">Week 4</div></div>
+        <div class="photo-slot" onclick="showToast('Keep going — photo unlock at Week 8! 🔥')"><div class="photo-slot-icon">🔒</div><div class="photo-slot-label">Week 8</div></div>
+      </div>
+    </div>
+
+    <div class="timeline-section">
+      <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;">9-Month Roadmap</div>
+      <div id="timeline-items"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ PROFILE ══════════════ -->
+  <div class="screen" id="screen-profile">
+    <div class="profile-hero">
+      <div class="profile-avatar">👑</div>
+      <div class="profile-name-display" id="profile-name-big">Denise</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px;">Train Smart · Recover Better</div>
+    </div>
+
+    <div class="profile-stats-row">
+      <div class="profile-stat-card"><div class="psc-val" id="p-streak">0</div><div class="psc-label">Day Streak</div></div>
+      <div class="profile-stat-card"><div class="psc-val" id="p-workouts">0</div><div class="psc-label">Workouts</div></div>
+      <div class="profile-stat-card"><div class="psc-val" id="p-weeks">1</div><div class="psc-label">Weeks In</div></div>
+    </div>
+
+    <div class="settings-list">
+      <div class="settings-group-title" style="margin-bottom:8px;">My Details</div>
+      <div class="settings-item" onclick="openNameEdit()">
+        <div class="si-left"><div class="si-icon">👤</div><div class="si-text">My Name</div></div>
+        <div class="si-val" id="si-name-val">Denise</div>
+      </div>
+      <div class="settings-item" onclick="openGoalWeightEdit()">
+        <div class="si-left"><div class="si-icon">🎯</div><div class="si-text">Goal Weight</div></div>
+        <div class="si-val" id="si-goal-val">Not set</div>
+      </div>
+      <div class="settings-item" onclick="openStartWeightEdit()">
+        <div class="si-left"><div class="si-icon">⚖️</div><div class="si-text">Starting Weight</div></div>
+        <div class="si-val" id="si-start-val">Not set</div>
+      </div>
+    </div>
+
+    <div class="settings-list" style="margin-top:8px;">
+      <div class="settings-group-title" style="margin-bottom:8px;">Reminders & Motivation</div>
+      <div class="settings-item">
+        <div class="si-left"><div class="si-icon">🔔</div><div class="si-text">Workout Reminders</div></div>
+        <div class="toggle on" id="toggle-reminders" onclick="toggleSetting('reminders')"><div class="toggle-knob"></div></div>
+      </div>
+      <div class="settings-item">
+        <div class="si-left"><div class="si-icon">💬</div><div class="si-text">Daily Compliments</div></div>
+        <div class="toggle on" id="toggle-compliments" onclick="toggleSetting('compliments')"><div class="toggle-knob"></div></div>
+      </div>
+      <div class="settings-item">
+        <div class="si-left"><div class="si-icon">💧</div><div class="si-text">Water Reminders</div></div>
+        <div class="toggle on" id="toggle-water" onclick="toggleSetting('water')"><div class="toggle-knob"></div></div>
+      </div>
+    </div>
+
+    <div class="settings-list" style="margin-top:8px;">
+      <div class="settings-group-title" style="margin-bottom:8px;">Save Your App</div>
+      <div class="settings-item" onclick="showToast('On iPhone: Safari → Share → Add to Home Screen 📱')">
+        <div class="si-left"><div class="si-icon">📱</div><div class="si-text">Add to Home Screen (iPhone)</div></div>
+        <div style="font-size:18px;color:var(--muted);">›</div>
+      </div>
+      <div class="settings-item" onclick="showToast('On Android: Chrome menu → Add to Home Screen 🤖')">
+        <div class="si-left"><div class="si-icon">🤖</div><div class="si-text">Add to Home Screen (Android)</div></div>
+        <div style="font-size:18px;color:var(--muted);">›</div>
+      </div>
+    </div>
+
+    <div style="height:20px;"></div>
+  </div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-btn active" onclick="showScreen('home',this)"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></div>
+    <div class="nav-btn" onclick="showScreen('workouts',this)"><div class="nav-icon">💪</div><div class="nav-label">Workouts</div></div>
+    <div class="nav-btn" onclick="showScreen('nutrition',this)"><div class="nav-icon">🥗</div><div class="nav-label">Nutrition</div></div>
+    <div class="nav-btn" onclick="showScreen('progress',this)"><div class="nav-icon">📈</div><div class="nav-label">Progress</div></div>
+    <div class="nav-btn" onclick="showScreen('profile',this)"><div class="nav-icon">👤</div><div class="nav-label">Profile</div></div>
+  </nav>
+</div>
+
+<!-- ADD MEAL OVERLAY -->
+<div class="add-meal-overlay" id="add-meal-overlay">
+  <div class="add-meal-sheet">
+    <div class="ams-title">Log a Meal 🥗</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Quick picks:</div>
+    <div class="quick-foods" id="quick-foods"></div>
+    <input class="ams-input" id="meal-name-input" placeholder="Meal name (e.g. Grilled chicken & rice)">
+    <div class="ams-row" style="margin-bottom:10px;">
+      <input class="ams-input" id="meal-cals-input" placeholder="Calories (e.g. 450)" type="number" style="margin-bottom:0;">
+      <input class="ams-input" id="meal-protein-input" placeholder="Protein g" type="number" style="margin-bottom:0;">
+    </div>
+    <div class="ams-row" style="margin-bottom:16px;">
+      <input class="ams-input" id="meal-carbs-input" placeholder="Carbs g" type="number" style="margin-bottom:0;">
+      <input class="ams-input" id="meal-fat-input" placeholder="Fat g" type="number" style="margin-bottom:0;">
+    </div>
+    <div class="ams-row">
+      <button class="ams-btn ams-cancel" onclick="closeAddMeal()">Cancel</button>
+      <button class="ams-btn ams-save" onclick="saveMeal()">Log It ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- WEIGHT LOG OVERLAY -->
+<div class="weight-overlay" id="weight-overlay">
+  <div class="weight-sheet">
+    <div class="nes-title">Log Weight ⚖️</div>
+    <input class="ams-input" id="weight-input" placeholder="Your weight in kg (e.g. 68.5)" type="number" step="0.1">
+    <div class="ams-row" style="margin-top:10px;">
+      <button class="ams-btn ams-cancel" onclick="closeWeightLog()">Cancel</button>
+      <button class="ams-btn ams-save" onclick="saveWeight()">Save ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAME EDIT OVERLAY -->
+<div class="name-edit-overlay" id="name-edit-overlay">
+  <div class="name-edit-sheet">
+    <div class="nes-title">What's your name? 👑</div>
+    <input class="ams-input" id="name-input" placeholder="Enter your name">
+    <div class="ams-row" style="margin-top:10px;">
+      <button class="ams-btn ams-cancel" onclick="closeNameEdit()">Cancel</button>
+      <button class="ams-btn ams-save" onclick="saveName()">Save ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- GOAL WEIGHT OVERLAY -->
+<div class="name-edit-overlay" id="goal-edit-overlay">
+  <div class="name-edit-sheet">
+    <div class="nes-title">Goal Weight 🎯</div>
+    <input class="ams-input" id="goal-input" placeholder="Target weight in kg" type="number" step="0.1">
+    <div class="ams-row" style="margin-top:10px;">
+      <button class="ams-btn ams-cancel" onclick="document.getElementById('goal-edit-overlay').classList.remove('show')">Cancel</button>
+      <button class="ams-btn ams-save" onclick="saveGoalWeight()">Save ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- START WEIGHT OVERLAY -->
+<div class="name-edit-overlay" id="start-edit-overlay">
+  <div class="name-edit-sheet">
+    <div class="nes-title">Starting Weight ⚖️</div>
+    <input class="ams-input" id="start-input" placeholder="Starting weight in kg" type="number" step="0.1">
+    <div class="ams-row" style="margin-top:10px;">
+      <button class="ams-btn ams-cancel" onclick="document.getElementById('start-edit-overlay').classList.remove('show')">Cancel</button>
+      <button class="ams-btn ams-save" onclick="saveStartWeight()">Save ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════
+// DATA
+// ═══════════════════════════════
+const DAYS = [
+  {
+    name:'Monday', short:'Mon', tag:'Day 01 · Work Day',
+    title:'Core + Belly Fat Burn', goal:'Flatten stomach, tighten waist — no leg fatigue', duration:'45–55 min',
+    isLeg:false,
+    preStretches:[
+      {icon:'🔄',name:'Standing torso rotations',dur:'30 sec'},
+      {icon:'🦵',name:'Standing knee-to-chest pulls',dur:'10 each side'},
+      {icon:'🌊',name:'Cat-cow on all fours',dur:'10 reps slow'},
+      {icon:'💫',name:'Hip circles',dur:'10 each direction'},
+      {icon:'🏃',name:'Light jog or march in place',dur:'2 min'},
+    ],
+    circuitLabel:'Circuit', circuitNote:'4 rounds · Rest 60s between rounds',
+    exercises:[
+      {name:'Plank (exhale hard at top)',detail:'45 sec',sets:4,
+       cues:['Draw your belly button toward your spine — this activates the transverse abdominis','Breathe out forcefully every few seconds to increase core tension','Keep hips level — don\'t let them rise or sag','Squeeze your glutes and quads throughout']},
+      {name:'Dead Bug',detail:'10 each side',sets:3,
+       cues:['Press your lower back flat into the floor — this is the key','Extend opposite arm and leg slowly while keeping that back flat','Move slowly — 3 seconds out, 3 seconds back','If your back lifts off the floor, shorten your range of motion']},
+      {name:'Bicycle Crunch',detail:'20 reps',sets:4,
+       cues:['Don\'t pull your neck — keep hands light behind your head','Fully extend the straight leg low to the ground','Twist your torso (not just your elbow) to meet the knee','Slow and controlled beats fast and sloppy every time']},
+      {name:'Mountain Climbers',detail:'40 sec',sets:4,
+       cues:['Keep hips down and level — don\'t bounce them up','Drive each knee toward your chest fully','Keep your core braced as if taking a punch','Aim for speed without sacrificing form']},
+      {name:'Pallof Press (band) or Russian Twists',detail:'15 each side',sets:3,
+       cues:['For Pallof: resist the band pulling you sideways — this is anti-rotation core work','Press directly forward at chest height, hold 1 second, bring back','For Russian Twists: lean back 45°, keep feet off floor for more challenge','Touch the floor beside each hip with control, not momentum']},
+      {name:'High Knees',detail:'30 sec',sets:4,
+       cues:['Drive knees up above hip height each rep','Pump your arms to increase intensity','Land softly on the balls of your feet','Keep your core tight — don\'t let your torso lean back']},
+    ],
+    finisher:{icon:'🏔️',label:'Finisher',text:'Incline treadmill walk — 15 minutes'},
+    postStretches:[
+      {icon:'🧘',name:'Child\'s pose',dur:'45 sec'},
+      {icon:'🌀',name:'Lying spinal twist (each side)',dur:'30 sec each'},
+      {icon:'⬆️',name:'Cobra stretch — lower back relief',dur:'30 sec × 2'},
+      {icon:'🦋',name:'Seated figure-4 hip stretch',dur:'30 sec each side'},
+      {icon:'🙆',name:'Standing side stretch (overhead)',dur:'20 sec each side'},
+    ]
+  },
+  {
+    name:'Tuesday', short:'Tue', tag:'Day 02 · Work Day',
+    title:'Back + Posture', goal:'Tight back, better posture, slimmer waist appearance', duration:'45–55 min',
+    isLeg:false,
+    preStretches:[
+      {icon:'🔄',name:'Arm circles forward & back',dur:'30 sec each way'},
+      {icon:'🏹',name:'Band pull-aparts',dur:'15 reps'},
+      {icon:'🌊',name:'Cat-cow spine mobilisation',dur:'10 reps'},
+      {icon:'↔️',name:'Shoulder cross-body swings',dur:'10 each arm'},
+      {icon:'🔁',name:'Thoracic rotations seated',dur:'10 each side'},
+    ],
+    circuitLabel:'Strength Sets', circuitNote:'rest 60–90s between sets',
+    exercises:[
+      {name:'Bent Over Dumbbell Rows',detail:'4 × 12 reps',sets:4,
+       cues:['Hinge at hips until torso is nearly parallel to floor','Keep your back flat — no rounding','Pull dumbbells toward your hips, not your chest','Squeeze your shoulder blades together at the top']},
+      {name:'Lat Pulldown (or band pulldown)',detail:'3 × 12 reps',sets:3,
+       cues:['Lean back slightly — about 20–30 degrees','Pull the bar or band to your upper chest','Focus on driving your elbows down toward your hips','Control the return slowly — don\'t just let it snap back']},
+      {name:'Face Pulls (band)',detail:'3 × 15 reps',sets:3,
+       cues:['Pull the band toward your face, hands at ear level','Your elbows should finish higher than your wrists','This fixes rounded shoulders which make upper belly look worse','Squeeze your rear delts (back of shoulders) at the end of each rep']},
+      {name:'Reverse Dumbbell Fly',detail:'3 × 12 reps',sets:3,
+       cues:['Hinge forward at the hips, back flat','Raise arms out to the sides like wings — lead with your elbows','Use light weight — these are small muscles','Squeeze your shoulder blades together at the top']},
+      {name:'Superman Hold',detail:'3 × 30 sec',sets:3,
+       cues:['Lift arms, chest, and legs off the floor simultaneously','Squeeze your glutes to protect your lower back','Hold the top position — don\'t just flap up and down','Look slightly down — don\'t crane your neck up']},
+      {name:'Resistance Band Pull Apart',detail:'3 × 15 reps',sets:3,
+       cues:['Hold band at shoulder height with straight arms','Pull the band apart until arms are fully extended out to sides','Keep arms straight throughout — no elbow bending','Squeeze your shoulder blades together at full extension']},
+    ],
+    finisher:{icon:'🚶',label:'Finisher',text:'Brisk walk — 15 minutes (cortisol cool-down)'},
+    postStretches:[
+      {icon:'🙏',name:'Doorway chest opener',dur:'30 sec × 2'},
+      {icon:'↕️',name:'Lat stretch — arm overhead, lean sideways',dur:'30 sec each side'},
+      {icon:'🧘',name:'Child\'s pose with arm reach forward',dur:'45 sec'},
+      {icon:'🔄',name:'Cross-body shoulder stretch',dur:'30 sec each side'},
+      {icon:'🌀',name:'Seated spinal twist',dur:'30 sec each side'},
+    ]
+  },
+  {
+    name:'Wednesday', short:'Wed 🦵', tag:'Day 03 · Day Off ✓',
+    title:'Lower Body — Glutes & Legs', goal:'Build strength, shape glutes — recover freely at home', duration:'45–55 min',
+    isLeg:true,
+    preStretches:[
+      {icon:'🦵',name:'Leg swings front to back',dur:'15 each leg'},
+      {icon:'↔️',name:'Lateral leg swings',dur:'15 each leg'},
+      {icon:'💫',name:'Hip circles',dur:'10 each direction'},
+      {icon:'🌉',name:'Glute bridges — slow activation',dur:'15 reps'},
+      {icon:'🏃',name:'Bodyweight squats slow',dur:'10 reps'},
+      {icon:'🦀',name:'Band clamshells',dur:'12 each side'},
+    ],
+    circuitLabel:'Strength Sets', circuitNote:'rest 60–90s between sets',
+    exercises:[
+      {name:'Dumbbell Squats',detail:'4 × 12 reps',sets:4,
+       cues:['Feet shoulder-width apart, toes slightly out','Keep chest up and weight in your heels','Knees track over your toes — push them out','Go until thighs are parallel to floor or lower']},
+      {name:'Walking Lunges',detail:'3 × 12 each leg',sets:3,
+       cues:['Step forward into a long stride','Front knee stays above the ankle — don\'t let it cave in','Back knee lowers toward (not touching) the floor','Keep your torso upright — don\'t lean forward']},
+      {name:'Romanian Deadlifts',detail:'3 × 12 reps',sets:3,
+       cues:['Soft bend in knees, push hips back — not knees forward','Keep dumbbells close to your legs the whole way down','Feel the stretch in your hamstrings before reversing','Squeeze glutes to drive back up — don\'t round your back']},
+      {name:'Hip Thrusts',detail:'4 × 15 reps',sets:4,
+       cues:['Upper back on bench/sofa edge, feet flat on floor','Drive through your heels — not your toes','Tuck chin to chest to protect your spine','Squeeze your glutes HARD at the top for 1 full second']},
+      {name:'Glute Bridges',detail:'3 × 15 reps',sets:3,
+       cues:['Lie on your back, feet flat, knees bent','Push through heels to raise hips','Squeeze glutes at the top — hold 1 second','Lower with control — don\'t just drop']},
+      {name:'Resistance Band Side Walks',detail:'3 × 20 steps',sets:3,
+       cues:['Band just above or below knees','Keep slight squat position throughout — don\'t stand up','Step wide enough to feel the tension','This targets the glute medius — key for hip shape']},
+    ],
+    finisher:{icon:'🏔️',label:'Finisher',text:'Stair climber or incline walk — 10 minutes'},
+    postStretches:[
+      {icon:'🧘',name:'Pigeon pose — deep glute stretch',dur:'45 sec each side'},
+      {icon:'🦵',name:'Standing quad stretch',dur:'30 sec each leg'},
+      {icon:'🙇',name:'Standing hamstring fold-over',dur:'45 sec'},
+      {icon:'🏹',name:'Low lunge hip flexor stretch',dur:'40 sec each side'},
+      {icon:'🦋',name:'Butterfly — inner thigh stretch',dur:'45 sec'},
+      {icon:'🌀',name:'Lying figure-4 glute stretch',dur:'45 sec each side'},
+    ]
+  },
+  {
+    name:'Thursday', short:'Thu 🦵', tag:'Day 04 · Day Off ✓',
+    title:'Lower Body + HIIT', goal:'Burn fat fast — soreness recovers over the weekend', duration:'50–60 min',
+    isLeg:true,
+    preStretches:[
+      {icon:'🦵',name:'Leg swings front & lateral',dur:'10 each direction'},
+      {icon:'🌉',name:'Glute bridge activation',dur:'15 reps'},
+      {icon:'🏃',name:'Jump rope easy pace',dur:'2 min'},
+      {icon:'💫',name:'Hip openers standing',dur:'10 each leg'},
+      {icon:'🦀',name:'Lateral band walks activation',dur:'10 steps each way'},
+    ],
+    circuitLabel:'Strength Sets', circuitNote:'rest 60s between sets',
+    exercises:[
+      {name:'Step Ups (bench)',detail:'3 × 12 each leg',sets:3,
+       cues:['Place entire foot on the bench — don\'t just use your toes','Drive through the heel of the working leg','Don\'t push off your back foot — make the front leg do the work','Keep torso tall and core engaged throughout']},
+      {name:'Jump Squats',detail:'3 × 12 reps',sets:3,
+       cues:['Land softly with knees bent — like a spring absorbing force','Sink straight into the next squat upon landing','Use your arms to generate momentum on the way up','If knees hurt, do regular squats with a quick rise instead']},
+      {name:'Hip Thrusts (add weight)',detail:'4 × 15 reps',sets:4,
+       cues:['Week by week: try to increase the weight slightly','1 second hold at the top — squeeze your glutes hard','Feet flat, not on tiptoes — keeps hamstrings out of it','The upper back angle stays constant — only hips move']},
+      {name:'Glute Kickbacks (band)',detail:'3 × 15 each leg',sets:3,
+       cues:['On hands and knees, band around ankles','Extend one leg back and up — focus on squeezing the glute','Don\'t rotate your hip to get more range — keep it even','Slow and controlled — 2 seconds up, 2 seconds down']},
+      {name:'Bodyweight Squats',detail:'3 × 20 reps',sets:3,
+       cues:['Use this as a burnout — aim for speed with good form','Arms in front for balance','Every rep counts — full depth each time','By rep 15+ it should burn — that\'s working!']},
+    ],
+    finisher:{icon:'⚡',label:'HIIT Tabata',text:'Jump rope: 20 sec on / 10 sec off × 10 rounds (5 min)'},
+    postStretches:[
+      {icon:'🧘',name:'Pigeon pose deep — hold longer today',dur:'60 sec each side'},
+      {icon:'🦵',name:'Quad stretch lying or standing',dur:'40 sec each leg'},
+      {icon:'🙇',name:'Seated hamstring stretch',dur:'45 sec each leg'},
+      {icon:'🏹',name:'Deep low lunge — hip flexor',dur:'45 sec each side'},
+      {icon:'💆',name:'Child\'s pose — full back rest',dur:'60 sec'},
+      {icon:'🌀',name:'Lying spinal twist',dur:'30 sec each side'},
+    ]
+  },
+  {
+    name:'Friday', short:'Fri', tag:'Day 05 · Work Day',
+    title:'Core Sculpt + Fat Burn', goal:'Waistline tightening, deep core — no leg work', duration:'45–50 min',
+    isLeg:false,
+    preStretches:[
+      {icon:'🌊',name:'Cat-cow spine mobilisation',dur:'10 slow reps'},
+      {icon:'🔄',name:'Torso rotations arms out',dur:'30 sec'},
+      {icon:'🙆',name:'Side bends standing',dur:'10 each side'},
+      {icon:'🏃',name:'March or light jog',dur:'2 min'},
+      {icon:'🦵',name:'Knee-to-chest standing',dur:'10 each leg'},
+    ],
+    circuitLabel:'Circuit', circuitNote:'4 rounds · Rest 60s between rounds',
+    exercises:[
+      {name:'Leg Raises',detail:'15 reps',sets:4,
+       cues:['Press your lower back into the floor — don\'t let it arch','Lower legs slowly — 3 seconds down — for more intensity','If legs feel heavy, bend them slightly to reduce load','Keep your head and shoulders flat on the floor']},
+      {name:'Hollow Body Hold',detail:'30 sec',sets:4,
+       cues:['Lower back pressed hard into the floor — this is the whole exercise','Arms overhead and legs extended low — like a banana shape','The lower your legs, the harder it is — find your level','If your back lifts off the floor, raise your legs higher']},
+      {name:'Side Plank',detail:'30 sec each side',dur:'30 sec each side',sets:4,
+       cues:['Stack feet or stagger for stability','Keep your hips lifted — don\'t let them sag to the floor','Body in a straight line from head to heels','Breathe steadily — don\'t hold your breath']},
+      {name:'Standing Oblique Crunch',detail:'20 reps',sets:4,
+       cues:['Stand tall, hand behind head','Crunch your elbow toward your rising knee','Really squeeze your oblique (side) at the top','Keep the movement slow and controlled — not swinging']},
+      {name:'Burpees',detail:'10 reps',sets:4,
+       cues:['From standing: hands to floor, jump feet back to plank','Optional: add a push-up in plank for extra burn','Jump feet forward to hands, then jump up with arms overhead','If too intense, step feet in and out instead of jumping']},
+    ],
+    finisher:{icon:'🏔️',label:'Finisher',text:'Incline treadmill walk — 20 minutes (end-of-week cortisol flush)'},
+    postStretches:[
+      {icon:'⬆️',name:'Cobra stretch — belly & abs',dur:'30 sec × 2'},
+      {icon:'🌀',name:'Lying spinal twist',dur:'30 sec each side'},
+      {icon:'🧘',name:'Child\'s pose',dur:'45 sec'},
+      {icon:'🙆',name:'Standing overhead side stretch',dur:'20 sec each side'},
+      {icon:'🦋',name:'Seated forward fold',dur:'45 sec'},
+    ]
+  }
+];
+
+const COMPLIMENTS = [
+  "You\'re doing something most people only talk about. That\'s the difference between you and them.",
+  "Your body is changing even on days you don\'t see it. Trust the process.",
+  "Every workout you show up for is a vote for the person you\'re becoming.",
+  "Rest days are part of the plan. You\'re not falling behind — you\'re recovering forward.",
+  "The upper belly doesn\'t go overnight, but consistency like yours makes it go eventually.",
+  "You\'re not just training your body — you\'re training your mind. Both are getting stronger.",
+  "Soreness is weakness leaving the body. Let it go.",
+  "Imagine where you\'ll be 9 months from now if you keep showing up like you have been.",
+  "Your future self is already grateful for what you\'re doing today.",
+  "Jojoe is going to be speechless when he sees you walk down that aisle, Denise. Keep going.",
+  "You and Jojoe have something beautiful ahead. You\'re building the best version of yourself for it.",
+  "Every rep is a love letter to your future self — the one standing at the altar glowing. 💍",
+  "You didn\'t come this far to only come this far.",
+  "The hard days build the most character. You\'ve got this.",
+  "Stress down, cortisol down, belly down. You know the formula — keep working it.",
+  "Sleep well tonight. That\'s when the magic actually happens in your body.",
+  "You\'re the main character of this story. Dress rehearsal starts now.",
+];
+
+const QUICK_FOODS = [
+  {name:'Grilled Chicken',emoji:'🍗',cals:280,p:45,c:0,f:8},
+  {name:'Greek Yogurt',emoji:'🥛',cals:130,p:17,c:9,f:3},
+  {name:'Eggs (2)',emoji:'🥚',cals:140,p:12,c:1,f:10},
+  {name:'Oatmeal',emoji:'🌾',cals:180,p:6,c:32,f:3},
+  {name:'Sweet Potato',emoji:'🍠',cals:130,p:3,c:30,f:0},
+  {name:'Salmon',emoji:'🐟',cals:250,p:35,c:0,f:12},
+  {name:'Salad Bowl',emoji:'🥗',cals:180,p:8,c:15,f:9},
+  {name:'Quinoa',emoji:'🌿',cals:220,p:8,c:39,f:4},
+  {name:'Banana',emoji:'🍌',cals:105,p:1,c:27,f:0},
+  {name:'Protein Shake',emoji:'💪',cals:160,p:25,c:8,f:3},
+  {name:'Rice & Veg',emoji:'🍚',cals:300,p:8,c:58,f:2},
+  {name:'Almonds (handful)',emoji:'🥜',cals:160,p:6,c:6,f:14},
+];
+
+const TIMELINE = [
+  {month:'Month 1–2',goal:'Fat loss begins · Stomach visibly flatter',color:'var(--terra)'},
+  {month:'Month 3–4',goal:'Waist smaller · Legs beautifully toned',color:'var(--gold)'},
+  {month:'Month 5–6',goal:'Strong defined core · Beautiful back',color:'var(--sage)'},
+  {month:'Month 7–8',goal:'Full body tone · Energy through the roof',color:'var(--terra2)'},
+  {month:'Month 9',goal:'Lean, sculpted — Walking the aisle for Jojoe 💍',color:'var(--gold2)'},
+];
+
+// ═══════════════════════════════
+// STATE (stored in memory)
+// ═══════════════════════════════
+let state = {
+  name: 'Denise',
+  startDate: new Date().toDateString(),
+  streak: 0,
+  workoutsDone: 0,
+  bestStreak: 0,
+  goalWeight: null,
+  startWeight: null,
+  weightLog: [],
+  meals: [],
+  totalMeals: 0,
+  rings: {workout:false, water:false, steps:false},
+  settings: {reminders:true, compliments:true, water:true},
+  sets: {},
+};
+
+function save(){try{localStorage.setItem('ts_state',JSON.stringify(state));}catch(e){}}
+function load(){try{const d=localStorage.getItem('ts_state');if(d){const p=JSON.parse(d);state={...state,...p};}}catch(e){}}
+
+// ═══════════════════════════════
+// INIT
+// ═══════════════════════════════
+window.addEventListener('load',()=>{
+  load();
+  setTimeout(()=>{
+    document.getElementById('splash').classList.add('hide');
+    initApp();
+  }, 2000);
+});
+
+function initApp(){
+  updateGreeting();
+  updateTodayCard();
+  buildWorkoutDay(0);
+  buildQuickFoods();
+  buildTimeline();
+  updateNutritionDisplay();
+  updateProgressScreen();
+  updateProfileScreen();
+  updateStats();
+  // Animate rings on load
+  setTimeout(()=>{
+    updateRingDisplay();
+  },300);
+}
+
+// ═══════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════
+function showScreen(id, btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+// ═══════════════════════════════
+// GREETING & HOME
+// ═══════════════════════════════
+function updateGreeting(){
+  const h = new Date().getHours();
+  const tod = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
+  document.getElementById('time-of-day').textContent = tod;
+  document.getElementById('display-name').textContent = state.name;
+  
+  // Compliment
+  const ci = Math.floor(new Date().getDate() % COMPLIMENTS.length);
+  document.getElementById('daily-compliment').textContent = COMPLIMENTS[ci];
+}
+
+function updateTodayCard(){
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const dayMap = {1:0,2:1,3:2,4:3,5:4}; // Mon=1->idx0
+  const today = new Date().getDay(); // 0=Sun
+  const dayName = days[today];
+  document.getElementById('today-day-name').textContent = dayName;
+  document.getElementById('workout-day-label').textContent = dayName.slice(0,3);
+  
+  const idx = today === 0 ? null : today === 6 ? null : dayMap[today];
+  if(idx !== undefined && idx !== null && DAYS[idx]){
+    const d = DAYS[idx];
+    document.getElementById('today-workout-title').textContent = d.title;
+    document.getElementById('today-workout-sub').textContent = d.duration + ' · ' + d.exercises.length + ' exercises · Full stretching included';
+    document.getElementById('workout-reminder').textContent = '🏋️ ' + d.title + ' is waiting for you';
+  } else {
+    document.getElementById('today-workout-title').textContent = 'Rest Day — You\'ve Earned It';
+    document.getElementById('today-workout-sub').textContent = 'Light walk · Stretch · Recover';
+    document.getElementById('workout-reminder').textContent = '🚶 Rest day — go for a gentle walk today';
+  }
+}
+
+function updateStats(){
+  const weeksIn = Math.max(1, Math.ceil((new Date() - new Date(state.startDate)) / (7*24*60*60*1000)));
+  state.weeksIn = weeksIn;
+  document.getElementById('streak-count').textContent = state.streak;
+  document.getElementById('workouts-done').textContent = state.workoutsDone;
+  document.getElementById('weeks-in').textContent = weeksIn;
+}
+
+function goToTodayWorkout(){
+  const days=['Sunday','M','T','W','R','F','S'];
+  const today = new Date().getDay();
+  const dayMap = {1:0,2:1,3:2,4:3,5:4};
+  const idx = dayMap[today];
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>{if(i===1)b.classList.add('active');else b.classList.remove('active');});
+  showScreen('workouts',null);
+  if(idx!==undefined){
+    setTimeout(()=>showDay(idx),100);
+  }
+}
+
+// ═══════════════════════════════
+// ACTIVITY RINGS
+// ═══════════════════════════════
+function updateRingDisplay(){
+  const total = 175.9;
+  ['workout','water','steps'].forEach(k=>{
+    const el = document.getElementById('ring-'+k);
+    const done = state.rings[k];
+    el.style.strokeDashoffset = done ? 0 : total;
+  });
+}
+
+function logRing(type){
+  state.rings[type] = !state.rings[type];
+  if(state.rings[type]){
+    const msgs = {
+      workout:'Workout logged! 🔥 You\'re unstoppable!',
+      water:'Hydration logged! 💧 Your belly thanks you!',
+      steps:'Steps logged! 🚶 Cortisol is dropping!'
+    };
+    showToast(msgs[type]);
+    if(type==='workout'){
+      state.workoutsDone++;
+      state.streak++;
+      if(state.streak > state.bestStreak) state.bestStreak = state.streak;
+      updateStats();
+    }
+  }
+  save();
+  updateRingDisplay();
+}
+
+// ═══════════════════════════════
+// WORKOUTS
+// ═══════════════════════════════
+let currentDay = 0;
+
+function showDay(idx){
+  currentDay = idx;
+  document.querySelectorAll('.day-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  buildWorkoutDay(idx);
+}
+
+function buildWorkoutDay(idx){
+  const d = DAYS[idx];
+  const el = document.getElementById('workout-content');
+  
+  let html = `
+    <div class="workout-day-header">
+      <div class="wdh-day">${d.tag}</div>
+      <div class="wdh-title">${d.title}</div>
+      <div class="wdh-goal">${d.goal}</div>
+      <div class="wdh-badge">${d.isLeg ? '🦵 Leg Day — Day Off' : '⚡ Work Day Safe'} · ${d.duration}</div>
+    </div>
+
+    <div class="stretch-block">
+      <div class="stretch-header-pill">
+        <div class="stretch-pill-badge pre-badge">Pre-Workout</div>
+        <div class="stretch-pill-desc">Dynamic warm-up · Keep moving, don't hold</div>
+      </div>
+      <div class="stretch-items">
+        ${d.preStretches.map(s=>`
+          <div class="s-item">
+            <div class="s-icon">${s.icon}</div>
+            <div class="s-name">${s.name}</div>
+            <div class="s-dur">${s.dur}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="ex-block">
+      <div class="ex-block-label">${d.circuitLabel} <span>— ${d.circuitNote}</span></div>
+      ${d.exercises.map((ex,i)=>buildExCard(idx,i,ex)).join('')}
+    </div>
+
+    <div class="finisher-pill">
+      <div class="fp-icon">${d.finisher.icon}</div>
+      <div>
+        <div class="fp-label">${d.finisher.label}</div>
+        <div class="fp-text">${d.finisher.text}</div>
+      </div>
+    </div>
+
+    <div class="stretch-block" style="margin:0 16px 14px;">
+      <div class="stretch-header-pill">
+        <div class="stretch-pill-badge post-badge">Post-Workout</div>
+        <div class="stretch-pill-desc">Static stretches · Hold each, breathe deeply</div>
+      </div>
+      <div class="stretch-items">
+        ${d.postStretches.map(s=>`
+          <div class="s-item">
+            <div class="s-icon">${s.icon}</div>
+            <div class="s-name">${s.name}</div>
+            <div class="s-dur">${s.dur}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div style="height:8px;"></div>
+  `;
+  el.innerHTML = html;
+}
+
+function buildExCard(dayIdx, exIdx, ex){
+  const key = `${dayIdx}_${exIdx}`;
+  const doneSets = (state.sets[key] || []);
+  const sets = ex.sets || 3;
+  const setsBtns = Array.from({length:sets},(_,i)=>{
+    const done = doneSets.includes(i);
+    return `<div class="set-btn ${done?'done':''}" onclick="toggleSet('${key}',${i},this)">S${i+1}</div>`;
+  }).join('');
+  
+  return `
+    <div class="exercise-card">
+      <div class="ex-row" onclick="toggleEx(this)">
+        <div class="ex-num ${doneSets.length>=sets?'done':''}">${doneSets.length>=sets?'✓':exIdx+1}</div>
+        <div class="ex-info">
+          <div class="ex-name">${ex.name}</div>
+          <div class="ex-detail">${ex.detail}</div>
+        </div>
+        <div class="ex-toggle">⌄</div>
+      </div>
+      <div class="ex-expand">
+        <div class="ex-expand-inner">
+          <div class="form-tip-title">Form Tips & Cues</div>
+          <ul class="form-cues">
+            ${ex.cues.map(c=>`<li class="form-cue">${c}</li>`).join('')}
+          </ul>
+          <div class="sets-tracker">
+            <div style="font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Track Sets</div>
+            <div class="sets-row">${setsBtns}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleEx(row){
+  const expand = row.nextElementSibling;
+  const toggle = row.querySelector('.ex-toggle');
+  expand.classList.toggle('open');
+  toggle.classList.toggle('open');
+}
+
+function toggleSet(key, idx, btn){
+  if(!state.sets[key]) state.sets[key]=[];
+  const arr = state.sets[key];
+  const pos = arr.indexOf(idx);
+  if(pos>-1) arr.splice(pos,1); else arr.push(idx);
+  btn.classList.toggle('done', arr.includes(idx));
+  // Update num circle
+  const card = btn.closest('.exercise-card');
+  if(card){
+    const num = card.querySelector('.ex-num');
+    // figure out total sets from day data
+    const [dayIdx,exIdx] = key.split('_').map(Number);
+    const ex = DAYS[dayIdx].exercises[exIdx];
+    const total = ex.sets||3;
+    if(arr.length>=total){num.classList.add('done');num.textContent='✓';}
+    else{num.classList.remove('done');num.textContent=exIdx+1;}
+  }
+  save();
+}
+
+// ═══════════════════════════════
+// NUTRITION
+// ═══════════════════════════════
+function buildQuickFoods(){
+  const el = document.getElementById('quick-foods');
+  el.innerHTML = QUICK_FOODS.map(f=>`
+    <div class="qf-chip" onclick="fillQuickFood('${f.name}',${f.cals},${f.p},${f.c},${f.f})">${f.emoji} ${f.name}</div>
+  `).join('');
+}
+
+function fillQuickFood(name,cals,p,c,f){
+  document.getElementById('meal-name-input').value=name;
+  document.getElementById('meal-cals-input').value=cals;
+  document.getElementById('meal-protein-input').value=p;
+  document.getElementById('meal-carbs-input').value=c;
+  document.getElementById('meal-fat-input').value=f;
+}
+
+function openAddMeal(){document.getElementById('add-meal-overlay').classList.add('show');}
+function closeAddMeal(){document.getElementById('add-meal-overlay').classList.remove('show');}
+
+function saveMeal(){
+  const name=document.getElementById('meal-name-input').value.trim()||'Meal';
+  const cals=parseFloat(document.getElementById('meal-cals-input').value)||0;
+  const p=parseFloat(document.getElementById('meal-protein-input').value)||0;
+  const c=parseFloat(document.getElementById('meal-carbs-input').value)||0;
+  const f=parseFloat(document.getElementById('meal-fat-input').value)||0;
+  const now=new Date();
+  const time=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const emoji=QUICK_FOODS.find(qf=>qf.name===name)?.emoji||'🍽️';
+  state.meals.push({name,cals,p,c,f,time,emoji});
+  state.totalMeals++;
+  save();
+  closeAddMeal();
+  clearMealInputs();
+  updateNutritionDisplay();
+  const msgs=['Great choice! Your body is being fuelled right 🙌','That\'s a solid meal for your goals! 💪','Love that — protein and consistency!'];
+  showToast(msgs[Math.floor(Math.random()*msgs.length)]);
+}
+
+function clearMealInputs(){
+  ['meal-name-input','meal-cals-input','meal-protein-input','meal-carbs-input','meal-fat-input'].forEach(id=>{document.getElementById(id).value='';});
+}
+
+function deleteMeal(idx){
+  state.meals.splice(idx,1);
+  save();
+  updateNutritionDisplay();
+}
+
+function updateNutritionDisplay(){
+  const totalCals=state.meals.reduce((a,m)=>a+m.cals,0);
+  const totalP=state.meals.reduce((a,m)=>a+m.p,0);
+  const totalC=state.meals.reduce((a,m)=>a+m.c,0);
+  const totalF=state.meals.reduce((a,m)=>a+m.f,0);
+  document.getElementById('total-cals').textContent=Math.round(totalCals);
+  document.getElementById('val-protein').textContent=Math.round(totalP)+'g';
+  document.getElementById('val-carbs').textContent=Math.round(totalC)+'g';
+  document.getElementById('val-fat').textContent=Math.round(totalF)+'g';
+  // Goals: ~1800 cals, 130g protein, 180g carbs, 60g fat
+  document.getElementById('bar-protein').style.width=Math.min(100,(totalP/130)*100)+'%';
+  document.getElementById('bar-carbs').style.width=Math.min(100,(totalC/180)*100)+'%';
+  document.getElementById('bar-fat').style.width=Math.min(100,(totalF/60)*100)+'%';
+
+  const today = new Date().toLocaleDateString();
+  document.getElementById('nutrition-date').textContent = today;
+  
+  const list = document.getElementById('meal-log-list');
+  if(state.meals.length===0){
+    list.innerHTML='<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px;">No meals logged yet — add your first one! 🥗</div>';
+    return;
+  }
+  list.innerHTML=state.meals.map((m,i)=>`
+    <div class="meal-item">
+      <div class="mi-left">
+        <div class="mi-emoji">${m.emoji}</div>
+        <div><div class="mi-name">${m.name}</div><div class="mi-time">${m.time} · P:${m.p}g C:${m.c}g F:${m.f}g</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="mi-cals">${m.cals} kcal</div>
+        <div class="mi-delete" onclick="deleteMeal(${i})">✕</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════
+// PROGRESS
+// ═══════════════════════════════
+function openWeightLog(){document.getElementById('weight-overlay').classList.add('show');}
+function closeWeightLog(){document.getElementById('weight-overlay').classList.remove('show');}
+
+function saveWeight(){
+  const w=parseFloat(document.getElementById('weight-input').value);
+  if(!w||isNaN(w))return;
+  const entry={weight:w,date:new Date().toLocaleDateString()};
+  state.weightLog.push(entry);
+  if(!state.startWeight) state.startWeight=w;
+  state.currentWeight=w;
+  save();
+  closeWeightLog();
+  document.getElementById('weight-input').value='';
+  updateProgressScreen();
+  const diff = w - state.startWeight;
+  if(diff<0) showToast(`Down ${Math.abs(diff).toFixed(1)}kg from start! Keep going! 🔥`);
+  else showToast('Weight logged! Consistency is everything 💪');
+}
+
+function buildTimeline(){
+  const el = document.getElementById('timeline-items');
+  el.innerHTML = TIMELINE.map((t,i)=>`
+    <div class="timeline-item">
+      <div class="tl-dot-col">
+        <div class="tl-dot" style="background:${t.color};"></div>
+        ${i<TIMELINE.length-1?'<div class="tl-line"></div>':''}
+      </div>
+      <div class="tl-content">
+        <div class="tl-month">${t.month}</div>
+        <div class="tl-goal">${t.goal}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateProgressScreen(){
+  const w = state.currentWeight;
+  document.getElementById('current-weight').textContent = w ? w.toFixed(1) : '—';
+  document.getElementById('goal-weight').textContent = state.goalWeight ? state.goalWeight+'kg' : '—';
+  
+  if(w && state.startWeight && w !== state.startWeight){
+    const diff = (w - state.startWeight).toFixed(1);
+    const sign = diff > 0 ? '+' : '';
+    document.getElementById('weight-change').textContent = sign+diff+'kg from start';
+  }
+  
+  const weeksIn = Math.max(1, Math.ceil((new Date() - new Date(state.startDate)) / (7*24*60*60*1000)));
+  document.getElementById('best-streak').textContent = state.bestStreak + ' days';
+  document.getElementById('total-workouts-done').textContent = state.workoutsDone;
+  document.getElementById('total-meals').textContent = state.totalMeals;
+  document.getElementById('weeks-active').textContent = weeksIn;
+
+  // Draw weight chart
+  drawWeightChart();
+}
+
+function drawWeightChart(){
+  const svg = document.getElementById('weight-chart-svg');
+  const log = state.weightLog;
+  if(log.length < 2){
+    svg.innerHTML = '<text id="chart-placeholder" x="150" y="45" text-anchor="middle" fill="#4a4040" font-size="12">Log 2+ weights to see your chart</text>';
+    return;
+  }
+  const weights = log.map(l=>l.weight);
+  const min = Math.min(...weights)-1;
+  const max = Math.max(...weights)+1;
+  const pts = weights.map((w,i)=>{
+    const x = (i/(weights.length-1))*280+10;
+    const y = 70 - ((w-min)/(max-min))*60;
+    return `${x},${y}`;
+  });
+  svg.innerHTML = `
+    <polyline points="${pts.join(' ')}" fill="none" stroke="var(--terra)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    ${pts.map((p,i)=>`<circle cx="${p.split(',')[0]}" cy="${p.split(',')[1]}" r="3" fill="var(--terra2)"/>`).join('')}
+  `;
+}
+
+// ═══════════════════════════════
+// PROFILE / SETTINGS
+// ═══════════════════════════════
+function updateProfileScreen(){
+  const n = state.name;
+  document.getElementById('profile-name-big').textContent = n;
+  document.getElementById('si-name-val').textContent = n;
+  document.getElementById('display-name').textContent = n;
+  document.getElementById('si-goal-val').textContent = state.goalWeight ? state.goalWeight+'kg' : 'Not set';
+  document.getElementById('si-start-val').textContent = state.startWeight ? state.startWeight+'kg' : 'Not set';
+  const weeksIn = Math.max(1, Math.ceil((new Date() - new Date(state.startDate)) / (7*24*60*60*1000)));
+  document.getElementById('p-streak').textContent = state.streak;
+  document.getElementById('p-workouts').textContent = state.workoutsDone;
+  document.getElementById('p-weeks').textContent = weeksIn;
+  
+  ['reminders','compliments','water'].forEach(k=>{
+    const el = document.getElementById('toggle-'+k);
+    if(el) el.classList.toggle('on', state.settings[k]!==false);
+  });
+}
+
+function openNameEdit(){
+  document.getElementById('name-input').value = state.name;
+  document.getElementById('name-edit-overlay').classList.add('show');
+}
+function closeNameEdit(){document.getElementById('name-edit-overlay').classList.remove('show');}
+function saveName(){
+  const n = document.getElementById('name-input').value.trim();
+  if(n){
+    state.name=n;
+    save();
+    updateProfileScreen();
+    updateGreeting();
+    closeNameEdit();
+    showToast('Name updated! Welcome, '+n+' 👑');
+  }
+}
+
+function openGoalWeightEdit(){
+  document.getElementById('goal-input').value = state.goalWeight||'';
+  document.getElementById('goal-edit-overlay').classList.add('show');
+}
+function saveGoalWeight(){
+  const g=parseFloat(document.getElementById('goal-input').value);
+  if(g){
+    state.goalWeight=g;
+    save();
+    document.getElementById('goal-edit-overlay').classList.remove('show');
+    updateProfileScreen();
+    updateProgressScreen();
+    showToast('Goal set! You\'ve got this 🎯');
+  }
+}
+
+function openStartWeightEdit(){
+  document.getElementById('start-input').value = state.startWeight||'';
+  document.getElementById('start-edit-overlay').classList.add('show');
+}
+function saveStartWeight(){
+  const s=parseFloat(document.getElementById('start-input').value);
+  if(s){
+    state.startWeight=s;
+    if(!state.currentWeight) state.currentWeight=s;
+    save();
+    document.getElementById('start-edit-overlay').classList.remove('show');
+    updateProfileScreen();
+    updateProgressScreen();
+    showToast('Starting weight saved! ✓');
+  }
+}
+
+function toggleSetting(key){
+  state.settings[key] = !state.settings[key];
+  save();
+  updateProfileScreen();
+}
+
+// ═══════════════════════════════
+// TOAST
+// ═══════════════════════════════
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
